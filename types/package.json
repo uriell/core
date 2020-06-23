@@ -1,0 +1,18 @@
+{
+  "name": "@u-wave/types",
+  "description": "TypeScript types for üWave plugins",
+  "version": "0.0.0",
+  "author": "Renée Kooi <renee@kooi.me>",
+  "bugs": "https://github.com/u-wave/core/issues",
+  "homepage": "https://u-wave.net",
+  "keywords": [
+    "typescript",
+    "u-wave"
+  ],
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/u-wave/core.git",
+    "directory": "types"
+  }
+}
