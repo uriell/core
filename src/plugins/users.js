@@ -1,6 +1,6 @@
 const bcrypt = require('bcryptjs');
 const createDebug = require('debug');
-const escapeStringRegExp = require('escape-string-regexp');
+const { escapeRegExp } = require('lodash');
 const Page = require('../Page');
 const { UserNotFoundError } = require('../errors');
 const PasswordError = require('../errors/PasswordError');
@@ -43,7 +43,7 @@ class UsersRepository {
     if (filter) {
       if (typeof filter !== 'string') throw new TypeError('User filter must be a string');
       queryFilter = {
-        username: new RegExp(escapeStringRegExp(filter)),
+        username: new RegExp(escapeRegExp(filter)),
       };
       query.where(queryFilter);
     }

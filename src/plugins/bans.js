@@ -1,5 +1,4 @@
-const { clamp } = require('lodash');
-const escapeStringRegExp = require('escape-string-regexp');
+const { clamp, escapeRegExp } = require('lodash');
 const Page = require('../Page');
 
 function isValidBan(user) {
@@ -45,7 +44,7 @@ class Bans {
     };
     if (filter) {
       Object.assign(queryFilter, {
-        username: { $regex: RegExp(escapeStringRegExp(filter), 'i') },
+        username: { $regex: RegExp(escapeRegExp(filter), 'i') },
       });
     }
 

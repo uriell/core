@@ -1,5 +1,4 @@
-const { groupBy, shuffle } = require('lodash');
-const escapeStringRegExp = require('escape-string-regexp');
+const { escapeRegExp, groupBy, shuffle } = require('lodash');
 const createDebug = require('debug');
 const { ObjectID } = require('mongoose').mongo;
 const NotFoundError = require('../errors/NotFoundError');
@@ -174,7 +173,7 @@ class PlaylistsRepository {
     ];
 
     if (filter) {
-      const rx = new RegExp(escapeStringRegExp(filter), 'i');
+      const rx = new RegExp(escapeRegExp(filter), 'i');
       aggregate.push({
         $match: {
           $or: [{ artist: rx }, { title: rx }],
