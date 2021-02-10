@@ -21,17 +21,6 @@ async function getSubRoles(role) {
   return flatten(roles);
 }
 
-async function getAllUserRoles(user) {
-  if (user.roles.length === 0) {
-    return [];
-  }
-
-  user.populate('roles');
-  await user.execPopulate('roles');
-  const roles = await Promise.all(user.roles.map(getSubRoles));
-  return flatten(roles);
-}
-
 const getRoleName = (role) => (
   typeof role === 'string' ? role : role.id
 );
@@ -44,6 +33,37 @@ class Acl {
 
   get AclRole() {
     return this.uw.model('AclRole');
+  }
+
+  async getAllUserRoles(user) {
+    if (user.roles.length === 0) {
+      return [];
+    }
+
+    const roleIDs = user.roles.map((role) => role || role.id);
+    const aggregate = [
+      // Find the user's assigned roles.
+      { $match: { _id: { $in: roleIDs } } },
+      // Look up all transitive roles and permissions that are granted by the user's roles.
+      {
+        $graphLookup: {
+          from: 'acl_roles',
+          startWith: '$roles',
+          connectFromField: 'roles',
+          connectToField: '_id',
+          as: 'roles',
+        },
+      },
+      { $unwind: '$roles' },
+      { $replaceRoot: { newRoot: '$roles' } },
+    ];
+
+    const subRoles = await AclRole.aggregate(aggregate)
+
+    user.populate('roles');
+    await user.execPopulate('roles');
+    const roles = await Promise.all(user.roles.map(getSubRoles));
+    return flatten(roles);
   }
 
   async maybeAddDefaultRoles() {
@@ -126,7 +146,7 @@ class Acl {
 
   async getAllPermissions(user) {
     const aclUser = await this.getAclUser(user);
-    const roles = await getAllUserRoles(aclUser);
+    const roles = await this.getAllUserRoles(aclUser);
     return roles.map((role) => role.id);
   }
 
@@ -137,7 +157,7 @@ class Acl {
     }
 
     const aclUser = await this.getAclUser(user);
-    const userRoles = await getAllUserRoles(aclUser);
+    const userRoles = await this.getAllUserRoles(aclUser);
     const roleIds = userRoles.map((userRole) => userRole.id);
 
     debug('role ids', roleIds, 'check', aclUser, role.id, 'super', this.superRole);
