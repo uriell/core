@@ -160,16 +160,24 @@ class UwaveServer extends EventEmitter {
   }
 
   /**
+   * Register a source plugin.
+   */
+  async useSource(sourcePlugin, opts = {}) {
+    await this.use(Source.plugin, {
+      source: sourcePlugin,
+      baseOptions: opts,
+    });
+  }
+
+  /**
    * Get or register a source plugin.
    * If the first parameter is a string, returns an existing source plugin.
    * Else, adds a source plugin and returns its wrapped source plugin.
    *
    * @param sourcePlugin {string|Function|Object} Source name or definition.
-   *     When a string: Source type name.
-   *     Used to signal where a given media item originated from.
-   *     When a function or object: Source plugin or plugin factory.
-   * @param opts {Object} Options to pass to the source plugin. Only used if
-   *     a source plugin factory was passed to `sourcePlugin`.
+   *     When a string: Name of the source to look up.
+   *     When a function or object: Source plugin or plugin factory to add.
+   * @param opts {Object} Options to pass to the source plugin.
    */
   source(sourcePlugin, opts = {}) {
     if (arguments.length === 1 && typeof sourcePlugin === 'string') { // eslint-disable-line prefer-rest-params
@@ -182,6 +190,10 @@ class UwaveServer extends EventEmitter {
       throw new TypeError(`Source plugin should be a function, got ${type}`);
     }
 
+    if (type === 'function' && sourceFactory.api >= 3) {
+      throw new TypeError('uw.source() only supports old-style source plugins.');
+    }
+
     const sourceDefinition = type === 'function'
       ? sourceFactory(this, opts)
       : sourceFactory;
@@ -191,9 +203,29 @@ class UwaveServer extends EventEmitter {
     }
     const newSource = new Source(this, sourceType, sourceDefinition);
 
-    this[kSources].set(sourceType, newSource);
+    this.insertSourceInternal(sourceType, newSource);
 
     return newSource;
+  }
+
+  /**
+   * Adds a fully wrapped source plugin. Not for external use.
+   */
+  insertSourceInternal(sourceType, source) {
+    this[kSources].set(sourceType, source);
+  }
+
+  /**
+   * Removes a source plugin. Not for external use.
+   *
+   * Only source plugins using Media Source API 3 or higher can be removed.
+   */
+  removeSourceInternal(sourceType) {
+    const source = this[kSources].get(sourceType);
+    if (this[kSources].delete(sourceType)) {
+      return source;
+    }
+    return null;
   }
 
   configureRedis() {
