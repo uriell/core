@@ -153,20 +153,20 @@ class UwaveServer extends EventEmitter {
   }
 
   /**
+   * Register a source plugin.
+   */
+  async useSource(sourcePlugin, opts = {}) {
+    this.use(Source.plugin, {
+      source: sourcePlugin,
+      baseOptions: opts,
+    });
+  }
+
+  /**
    * An array of registered sources.
    */
   get sources() {
     return [...this[kSources].values()];
-  }
-
-  /**
-   * Register a source plugin.
-   */
-  async useSource(sourcePlugin, opts = {}) {
-    await this.use(Source.plugin, {
-      source: sourcePlugin,
-      baseOptions: opts,
-    });
   }
 
   /**

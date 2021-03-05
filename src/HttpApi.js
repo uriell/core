@@ -12,11 +12,12 @@ const debug = require('debug')('uwave:http-api');
 // routes
 const authenticate = require('./routes/authenticate');
 const bans = require('./routes/bans');
+const imports = require('./routes/import');
+const now = require('./routes/now');
 const search = require('./routes/search');
 const server = require('./routes/server');
+const sources = require('./routes/sources');
 const users = require('./routes/users');
-const now = require('./routes/now');
-const imports = require('./routes/import');
 
 // middleware
 const addFullUrl = require('./middleware/addFullUrl');
@@ -140,6 +141,7 @@ class UwaveHttpApi extends Router {
       .use('/now', now(this))
       .use('/search', search(this))
       .use('/server', server())
+      .use('/sources', sources())
       .use('/users', users(this));
 
     return router;
