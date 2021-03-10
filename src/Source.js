@@ -166,7 +166,7 @@ class Source {
       if (enabled) {
         const instance = new SourcePlugin({
           ...baseOptions,
-          ...sourceOptions
+          ...sourceOptions,
         });
 
         const source = new Source(uw, SourcePlugin.sourceName, instance);
@@ -176,7 +176,7 @@ class Source {
 
     if (SourcePlugin.schema) {
       if (!SourcePlugin.schema['uw:key']) {
-        throw new TypeError(`Option schema for media source does not specify an "uw:key" value`);
+        throw new TypeError('Option schema for media source does not specify an "uw:key" value');
       }
 
       uw.config.register(SourcePlugin.schema['uw:key'], mergeAllOf({
@@ -192,7 +192,7 @@ class Source {
             },
             required: ['enabled'],
           },
-          SourcePlugin.schema
+          SourcePlugin.schema,
         ],
       }, { deep: false }));
 
